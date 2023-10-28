@@ -1,0 +1,10 @@
+D:\c#\L55\bin\Debug\L55.exe.config
+D:\c#\L55\bin\Debug\L55.exe
+D:\c#\L55\bin\Debug\L55.pdb
+D:\c#\L55\obj\Debug\L55.csproj.AssemblyReference.cache
+D:\c#\L55\obj\Debug\L55.Form1.resources
+D:\c#\L55\obj\Debug\L55.Properties.Resources.resources
+D:\c#\L55\obj\Debug\L55.csproj.GenerateResource.cache
+D:\c#\L55\obj\Debug\L55.csproj.CoreCompileInputs.cache
+D:\c#\L55\obj\Debug\L55.exe
+D:\c#\L55\obj\Debug\L55.pdb
