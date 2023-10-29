@@ -1,4 +1,5 @@
-﻿using lw1.model;
+﻿using L55.domen.utils;
+using lw1.model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,7 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -17,6 +18,8 @@ namespace L55
     {
         private Random random = new Random();
         private List<Door> doors = new List<Door>();
+        private ISerializer<Door> jsonHelper = new JSONSerializationHelper();
+        private ISerializer<Door> csvHelper = new CsvSerializationHelper();
 
         public Form1()
         {
@@ -304,21 +307,29 @@ namespace L55
 
         private void AddObjectButton_Click(object sender, EventArgs e)
         {
-            if (IsValidInput())
+            try
             {
-                Door newDoor = new Door();
-                newDoor.Height = int.Parse(heightTextBox.Text);
-                newDoor.DoorSign = doorSignTextBox.Text;
-                newDoor.IsOpened = isOpenedCheckBox.Checked;
-                newDoor.AmountOfWindows = int.Parse(amountOfWindowsTextBox.Text);
-                newDoor.Material = (DoorMaterial)materialComboBox.SelectedItem;
-                newDoor.Type = (DoorType)typeComboBox.SelectedItem;
+                if (IsValidInput())
+                {
+                    Door newDoor = new Door();
+                    newDoor.Height = int.Parse(heightTextBox.Text);
+                    newDoor.DoorSign = doorSignTextBox.Text;
+                    newDoor.IsOpened = isOpenedCheckBox.Checked;
+                    newDoor.AmountOfWindows = int.Parse(amountOfWindowsTextBox.Text);
+                    newDoor.Material = (DoorMaterial)materialComboBox.SelectedItem;
+                    newDoor.Type = (DoorType)typeComboBox.SelectedItem;
 
-                doors.Add(newDoor);
-                ClearInputFields();
-                DisplayDoors();
-                refreshLabel4();
+                    doors.Add(newDoor);
+                    ClearInputFields();
+                    DisplayDoors();
+                    refreshLabel4();
+                }
             }
+            catch(Exception err)
+            {
+                MessageBox.Show(err.Message);
+            }
+            
         }
 
         private void FindObjectButton_Click(object sender, EventArgs e)
@@ -375,6 +386,70 @@ namespace L55
             else
             {
                 MessageBox.Show("Select a door from the list.");
+            }
+        }
+
+        private void SaveToFile(string extension)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = extension == ".json" ? "JSON files (*.json)|*.json" : "CSV files (*.csv)|*.csv|Text files (*.txt)|*.txt";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = saveFileDialog.FileName;
+                    if (extension == ".json")
+                    {
+                        jsonHelper.Serialize(doors, filePath);
+                    }
+                    else
+                    {
+                        csvHelper.Serialize(doors, filePath);
+                    }
+                    MessageBox.Show("Collection saved successfully!");
+                }
+            }
+        }
+
+        private void LoadFromFile(string extension)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = extension == ".json" ? "JSON files (*.json)|*.json" : "CSV files (*.csv)|*.csv|Text files (*.txt)|*.txt";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = openFileDialog.FileName;
+                    List<Door> loadedDoors;
+                    if (extension == ".json")
+                    {
+                        loadedDoors = jsonHelper.Deserialize(filePath);
+                    }
+                    else
+                    {
+                        loadedDoors = csvHelper.Deserialize(filePath);
+                    }
+                    doors.AddRange(loadedDoors.Where(d => d != null));  // Add only correctly deserialized objects
+                    DisplayDoors();  // Refresh the displayed list (assuming you have a method like this)
+                    MessageBox.Show("Collection loaded successfully!");
+                }
+            }
+        }
+
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            using (FileFormatDialog dialog = new FileFormatDialog(DialogMode.Load))
+            {
+                dialog.FormatSelected += LoadFromFile;
+                dialog.ShowDialog(this);
+            }
+        }
+
+        private void button7_Click_1(object sender, EventArgs e)
+        {
+            using (FileFormatDialog dialog = new FileFormatDialog(DialogMode.Save))
+            {
+                dialog.FormatSelected += SaveToFile;
+                dialog.ShowDialog(this);
             }
         }
     }
